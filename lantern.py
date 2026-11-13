@@ -39,7 +39,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import quote, unquote, urlsplit
 
 CHUNK = 64 * 1024
-VERSION = "1.0"
+VERSION = "1.1"
 
 BANNER = r"""
   _                           _
@@ -392,20 +392,26 @@ class Handler(BaseHTTPRequestHandler):
 
         page = f"""<!DOCTYPE html>
 <html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Index of {esc(url_path)} — lantern</title>
 <style>
 :root{{--bg:#0b0b0d;--fg:#d6d3d1;--pink:#ff2e88;--cyan:#00e5ff;--dim:#8a8a8a;--border:rgba(255,255,255,.08)}}
 *{{box-sizing:border-box}}
 body{{margin:0;background:var(--bg);color:var(--fg);
- font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;padding:32px 20px;line-height:1.6}}
-.wrap{{max-width:1000px;margin:0 auto}}
-h1{{font-size:22px;margin:0 0 4px;letter-spacing:.03em}}
-h1 span{{color:var(--pink)}}
-.crumbs{{font-size:13px;opacity:.7;margin-bottom:18px}}
+ font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+ padding:clamp(16px,4vw,32px) clamp(12px,3vw,20px);line-height:1.6;
+ -webkit-text-size-adjust:100%}}
+.wrap{{max-width:1000px;margin:0 auto;width:100%}}
+.title{{margin:0 0 8px}}
+.glitch-title{{display:block;max-width:100%;height:auto;image-rendering:auto}}
+.cwd{{display:block;margin-top:8px;font-size:clamp(16px,4vw,22px);color:var(--pink);word-break:break-word;letter-spacing:.02em;font-weight:600}}
+.cwd:empty{{display:none}}
+.crumbs{{font-size:clamp(12px,3vw,13px);opacity:.7;margin-bottom:18px;
+ overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}}
 .crumbs a{{color:var(--cyan);text-decoration:none}}
 .crumbs a:hover{{text-decoration:underline}}
-table{{width:100%;border-collapse:collapse;font-size:13.5px}}
+table{{width:100%;border-collapse:collapse;font-size:clamp(12.5px,3.2vw,13.5px)}}
 th{{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);
  font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--cyan);font-weight:600}}
 td{{padding:8px 10px;border-bottom:1px solid var(--border)}}
@@ -413,11 +419,15 @@ tr:hover td{{background:rgba(255,255,255,.03)}}
 a{{color:var(--fg);text-decoration:none}}a:hover{{color:var(--pink)}}
 .icon{{width:32px;text-align:center;opacity:.7}}
 .size,.mtime{{color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}}
-.mtime{{font-size:12px}}
+.mtime{{font-size:clamp(11px,2.8vw,12px)}}
 footer{{margin-top:24px;font-size:11px;opacity:.35;letter-spacing:.15em;text-transform:uppercase}}
+
 </style></head><body><div class="wrap">
-<h1>Index of <span>{esc(url_path)}</span></h1>
+<div class="title">
+  <img class="glitch-title" src="https://gor-mez8.onrender.com/render.gif?text=Index+of+/&effect=glitch&font=monobold&w=480&h=56&size=34&c1=d6d3d1&bg=0b0b0d&fps=14&dur=2.5&seed=42" alt="Index of /" width="480" height="56">
+</div>
 <div class="crumbs">{crumb_html}</div>
+<div class="cwd">{esc((url_path.rstrip("/").split("/")[-1]) if url_path not in ("", "/") else "")}</div>
 <table><thead><tr><th></th><th>Name</th><th>Size</th><th>Modified</th></tr></thead>
 <tbody>{''.join(rows)}</tbody></table>
 <footer>lantern · {self.server.server_address[0]}:{self.server.server_address[1]}</footer>
